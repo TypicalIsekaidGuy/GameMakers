@@ -7,22 +7,18 @@ public class GameManager : MonoBehaviour
     public Transform player;
     public Transform cam;
 
-    public bool isOrderReady = false;
-    public List<int> order = new List<int>();
-    public int readyOrderIndex = 0;
-    private int min1 = 3;
-    private int max1 = 5;
-    private int min2 = 3;
-    private int max2 = 5;
-    private int min3 = 3;
-    private int max3 = 5;
-    private int min4 = 3;
-    private int max4 = 5;
-    public float order_speed = 2;
+    [HideInInspector]public bool isOrderReady = false;
+    public List<int[]> order = new List<int[]>();
+    public List<GameObject> orders = new List<GameObject>();
+    public int readyOrderIndex;
+    private int min, max;  
+    [HideInInspector]public int order_speed = 100;
 
     void Start()
     {
+        readyOrderIndex = 4;
         GiveOrder();
+        GetSettings();
     }
     void Update()
     {
@@ -34,27 +30,17 @@ public class GameManager : MonoBehaviour
         {
             isOrderReady = true;
             System.Random rand = new System.Random();
-            switch (readyOrderIndex)
-            {
-                case 0:
-                    order.Add(rand.Next(min1,max1+1));
-                    break;
-                case 1:
-                    order.Add(rand.Next(min1,max1+1));
-                    order.Add(rand.Next(min2,max2+1));
-                    break;
-                case 2:
-                    order.Add(rand.Next(min1,max1+1));
-                    order.Add(rand.Next(min2,max2+1));
-                    order.Add(rand.Next(min3,max3+1));
-                    break;
-                case 3:
-                    order.Add(rand.Next(min1,max1+1));
-                    order.Add(rand.Next(min2,max2+1));
-                    order.Add(rand.Next(min3,max3+1));
-                    order.Add(rand.Next(min4,max4+1));
-                    break;
-            }
+            for (int i = -1; i < readyOrderIndex; i++)
+                order.Add(new int[] { i + 1, rand.Next(min, max + 1) });
         }
+    }
+    public bool OrderCheck()
+    {
+        return order.Count == 0;
+    }
+    private void GetSettings()
+    {
+        min = 3;
+        max = 5;
     }
 }

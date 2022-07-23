@@ -9,8 +9,15 @@ public class BuyerTableManager : MonoBehaviour
     {
         if (col.CompareTag("Player"))
         {
-            if (gameManager.order.Count == 0)
+            if (gameManager.OrderCheck())
             {
+                foreach (GameObject u in gameManager.orders)
+                {
+                    Destroy(u);
+                }
+                gameManager.orders.Clear();//обернуть в метод
+                gameManager.order.Clear();
+                gameManager.isOrderReady = false;
                 gameManager.GiveOrder();
             }
         }

@@ -5,18 +5,21 @@ using UnityEngine;
 public class ShelfManager : MonoBehaviour
 {
     public GameManager gameManager;
-    private List<int> order;
+    private List<int[]> order;
     [SerializeField]private int index;
 
-    private WaitForSecondsRealtime wait;
+    private WaitForSeconds wait;
 
     public GameObject order_prefab;
     private GameObject order_object;
+    private static float objectCount = 0;
+    private int[] garbage;
 
     private void Start()
     {
+        garbage = new int[] { index, 0 };
         order = gameManager.order;
-        wait = new WaitForSecondsRealtime(gameManager.order_speed/10);
+        wait = new WaitForSeconds(0.01f);
     }
     void OnTriggerEnter(Collider col)
     {
@@ -24,7 +27,7 @@ public class ShelfManager : MonoBehaviour
         {
             if(index < order.Count)
             {
-                StartCoroutine("GiveOrder");
+                StartCoroutine(GiveOrder());
             }
         }
     }
@@ -34,25 +37,39 @@ public class ShelfManager : MonoBehaviour
         {
             if(index < order.Count)
             {
-                StopCoroutine("GiveOrder");
+                StopCoroutine(GiveOrder());
+                if(!gameManager.orders.Contains(order_object))
+                    Destroy(order_object);
             }
         }
     }
     private IEnumerator GiveOrder()
     {
-        while (order[index] != 0)
+        while (order.Contains(garbage))//переписать
         {
             order_object = Instantiate(order_prefab, transform.position, new Quaternion(0, 0, 0, 0));
-            int sas = 0;
-            while (sas!=100)
+            while (Vector3.Distance(gameManager.player.transform.position, order_object.transform.position) >0.1f)
             {
-                order_object.transform.position += new Vector3(1, 1, 1) / 100;
-                sas++;
+                order_object.transform.position += (gameManager.player.transform.position - transform.position)/ gameManager.order_speed;
                 yield return wait;
             }
-            Destroy(order_object);
-            order[index]--;
+            order_object.transform.parent = gameManager.player;
+            order_object.transform.position = gameManager.player.transform.position + new Vector3(gameManager.player.transform.forward.x / 3, objectCount, gameManager.player.transform.forward.z/3);
+            objectCount+=0.1f;
+            gameManager.orders.Add(order_object);
+            foreach (var item in order)
+            {
+                if (item[0] == index) { 
+                    item[1]--;
+                    if (item[1] == -1)
+                    {
+                        order.Remove(item);
+                        Debug.Log("Sas");
+                    }
+                }
+            }
         }
-        order.RemoveAt(index);
+        if (gameManager.OrderCheck())
+            objectCount = 0;
     }
 }
